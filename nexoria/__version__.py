@@ -1,0 +1,5 @@
+__version__ = "0.1.0"
+__author__ = "Divyanshu Sinha"
+__ecosystem__ = "Pythonaibrain"
+__license__ = "MIT"
+__framework_name__ = "Nexoria"
