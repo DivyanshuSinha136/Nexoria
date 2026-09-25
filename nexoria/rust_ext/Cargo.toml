@@ -1,0 +1,25 @@
+[package]
+name = "nexoria-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["Divyanshu Sinha"]
+license = "MIT"
+description = "Rust hot-path extension for the Nexoria web framework (Pythonaibrain ecosystem): virtual-DOM diffing and asset hashing."
+repository = "https://github.com/DivyanshuSinha136/nexoria"
+
+[lib]
+name = "_nexoria_rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module"] }
+pythonize = "0.22"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+twox-hash = "1.6"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+panic = "abort"

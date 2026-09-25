@@ -1,0 +1,2 @@
+from .map import Map, OL_CSS_TAG, OL_CORE_SCRIPT_TAG, OL_ADAPTER_TAG, OL_JS_CDN
+__all__ = ["Map", "OL_CSS_TAG", "OL_CORE_SCRIPT_TAG", "OL_ADAPTER_TAG", "OL_JS_CDN"]
