@@ -1,0 +1,83 @@
+# nexoria native VDOM -- mingw32-make build (CMake-free alternative)
+# ====================================================================
+# Builds the same `_nexoria_vdom_cpp` pybind11 extension as CMakeLists.txt,
+# but by driving g++ directly through mingw32-make instead of going through
+# CMake+Ninja/MSVC. Intended for a plain MinGW-w64 install (msys2's
+# `mingw32/mingw64` shell, or a standalone mingw-w64 toolchain) where
+# CMake either isn't installed or isn't wanted.
+#
+# Usage (from a MinGW shell, in this directory):
+#   mingw32-make -f Makefile.mingw
+#   mingw32-make -f Makefile.mingw clean
+#
+# Prerequisites:
+#   1. A MinGW-w64 g++ on PATH (g++ --version should say "MinGW-w64").
+#   2. The Rust safety core already built for the GNU target:
+#        cd ../../rust_safety && cargo build --release --target x86_64-pc-windows-gnu
+#      (plain `cargo build --release` also works if your default rustup
+#      toolchain is already *-pc-windows-gnu -- check with `rustup show`).
+#      This must produce libnexoria_safety_core.a (GNU ar-archive naming --
+#      NOT nexoria_safety_core.lib, which is the MSVC-target name and will
+#      NOT link against a MinGW g++ build).
+#   3. Python with pybind11 installed (`pip install pybind11`), and built
+#      against/for the *same* MinGW-w64 toolchain. This is the usual
+#      trip-up: a stock python.org CPython install ships only an MSVC-
+#      format `pythonXY.lib` import library, which MinGW's `ld` generally
+#      cannot link against directly. Use an MSYS2 `mingw-w64-x86_64-python`
+#      install instead (it ships a proper `libpythonX.Y.dll.a`), or
+#      generate one yourself with `gendef`/`dlltool` against the target
+#      Python's `pythonXY.dll` before running this Makefile.
+#
+# Output: _nexoria_vdom_cpp<EXT_SUFFIX>.pyd, copied to nexoria/native/cpp/vdom/build/
+# (build_native.py's _copy_built_module() looks there, same as the CMake path).
+
+PYTHON      ?= python
+CXX         ?= g++
+BUILD_DIR   := build
+
+SRC         := src/vdom.cpp
+RUST_DIR    := ../../rust_safety/target/release
+RUST_LIB    := $(RUST_DIR)/libnexoria_safety_core.a
+
+# Ask the interpreter that will actually import this extension for its own
+# include/lib paths and expected filename suffix, rather than hardcoding a
+# Python version -- keeps this in sync with whichever `python` is on PATH.
+PY_INCLUDE  := $(shell $(PYTHON) -c "import sysconfig; print(sysconfig.get_path('include'))")
+PY_LIBDIR   := $(shell $(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR') or sysconfig.get_config_var('installed_base') + '/libs')")
+PY_LDLIB    := $(shell $(PYTHON) -c "import sysconfig; print('python' + sysconfig.get_config_var('py_version_nodot'))")
+EXT_SUFFIX  := $(shell $(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX') or '.pyd')")
+PYBIND_INC  := $(shell $(PYTHON) -c "import pybind11; print(pybind11.get_include())")
+
+TARGET      := $(BUILD_DIR)/_nexoria_vdom_cpp$(EXT_SUFFIX)
+
+CXXFLAGS    := -std=c++17 -O3 -DNDEBUG -Wall -fvisibility=hidden \
+               -I. -I"$(PY_INCLUDE)" -I"$(PYBIND_INC)"
+# Build a Windows DLL with a .pyd extension: -shared produces the DLL,
+# and Python's import machinery only cares about the suffix, not that it
+# literally reads ".dll" on disk.
+LDFLAGS     := -shared -static-libgcc -static-libstdc++ \
+               -L"$(PY_LIBDIR)" -l$(PY_LDLIB) \
+               -lws2_32 -luserenv -lbcrypt -lntdll -ladvapi32
+
+.PHONY: all clean
+all: $(TARGET)
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+$(TARGET): $(SRC) nexoria_safety_core.h $(RUST_LIB) | $(BUILD_DIR)
+	@if [ ! -f "$(RUST_LIB)" ]; then \
+		echo "error: $(RUST_LIB) not found."; \
+		echo "  Build the Rust safety core for the GNU target first:"; \
+		echo "    cd $(RUST_DIR)/../.. && cargo build --release"; \
+		echo "  (If that produces nexoria_safety_core.lib instead of"; \
+		echo "   libnexoria_safety_core.a, your default rustup toolchain is"; \
+		echo "   an MSVC target -- add/select a *-pc-windows-gnu toolchain"; \
+		echo "   to match mingw32-make's GNU compiler ABI.)"; \
+		exit 1; \
+	fi
+	$(CXX) $(CXXFLAGS) $(SRC) $(RUST_LIB) -o $@ $(LDFLAGS)
+	@echo "-> built $@"
+
+clean:
+	rm -rf $(BUILD_DIR)
