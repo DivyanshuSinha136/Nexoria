@@ -1,0 +1,64 @@
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "nexoria"
+version = "0.1.0"
+description = "A modular, production-grade, cross-platform Python web framework with a Rust hot path and Node.js-powered tooling. Part of the Pythonaibrain ecosystem."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Divyanshu Sinha", email = "divyanshu.sinha631@gmail.com" }]
+requires-python = ">=3.9"
+keywords = ["web-framework", "python", "rust", "nodejs", "frontend", "fullstack", "pythonaibrain", "nexoria"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Rust",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Internet :: WWW/HTTP",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "starlette>=0.37",
+    "uvicorn[standard]>=0.29",
+    "jinja2>=3.1",
+    "watchfiles>=0.21",
+    "rich>=13.7",
+]
+
+[project.optional-dependencies]
+threejs = []          # pulls in no extra python deps; ships JS via CDN or bundled asset
+dev = ["pytest>=8.0", "pytest-asyncio", "black", "ruff"]
+
+[project.urls]
+Homepage = "https://github.com/DivyanshuSinha136/nexoria"
+Repository = "https://github.com/DivyanshuSinha136/nexoria"
+Ecosystem = "https://github.com/DivyanshuSinha136"
+
+[project.scripts]
+nexoria = "nexoria.cli.main:main"
+
+[tool.maturin]
+python-source = "."
+module-name = "nexoria._nexoria_rs"
+manifest-path = "nexoria/rust_ext/Cargo.toml"
+strip = true
+# Cargo's own build output (nexoria/rust_ext/target/) lives inside the
+# python-source tree above. Without these excludes, maturin will try to
+# package its own previous build artifacts (multi-GB) into the wheel on
+# every rebuild. Also keep test/tooling/vcs cruft out of the sdist/wheel.
+exclude = [
+    "nexoria/rust_ext/target/**/*",
+    "**/__pycache__/**/*",
+    "**/*.pyc",
+    ".git/**/*",
+    ".pytest_cache/**/*",
+    "tests/**/*",
+    "docs/**/*",
+    "examples/**/*",
+    "tools/node-build/node_modules/**/*",
+    "dist/**/*",
+]

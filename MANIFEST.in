@@ -1,0 +1,12 @@
+include README.md LICENSE
+recursive-include nexoria/runtime *.js *.css *.svg *.ico
+recursive-include nexoria/std/icons/data *.svg LICENSE
+recursive-include nexoria/rust_ext *.rs *.toml
+recursive-include tools/node-build *.js *.json
+recursive-include nexoria/native *.py *.rs *.toml *.cpp *.h *.txt *.c *.cu *.go *.mod *.sum
+prune nexoria/native/rust_safety/target
+prune nexoria/native/cpp/vdom/build
+prune nexoria/native/cpp/jsengine/build
+prune nexoria/native/cpp/jsengine/vendor/quickjs/build
+prune nexoria/native/cpp/gpu/build
+prune nexoria/native/go/server/build
