@@ -1,0 +1,21 @@
+{
+  "name": "@nexoria/node-build",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nexoria's Node.js production build tool: bundles/minifies the client runtime and app-specific JS assets, fingerprints output for cache-busting, and (in watch mode) powers `nexoria dev`. Part of the Pythonaibrain ecosystem.",
+  "author": "Divyanshu Sinha",
+  "license": "MIT",
+  "main": "build.js",
+  "bin": {
+    "nexoria-build": "./build.js"
+  },
+  "dependencies": {
+    "esbuild": "^0.23.0"
+  },
+  "optionalDependencies": {
+    "@tailwindcss/cli": "^4.3.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
