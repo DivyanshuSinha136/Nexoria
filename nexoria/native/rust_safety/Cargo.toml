@@ -1,0 +1,16 @@
+[package]
+name = "nexoria-safety-core"
+version = "0.1.0"
+edition = "2021"
+authors = ["Divyanshu Sinha"]
+license = "MIT"
+description = "Memory-safety-critical core for Nexoria's native C++ VDOM: a generational string interner for diff keys, exposed via a C ABI. Part of the Pythonaibrain ecosystem."
+
+[lib]
+name = "nexoria_safety_core"
+crate-type = ["cdylib", "staticlib"]
+
+[profile.release]
+lto = true
+opt-level = 3
+panic = "abort"
