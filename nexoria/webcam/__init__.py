@@ -1,0 +1,2 @@
+from .capture import Webcam, WEBCAM_IMPORTS, WEBCAM_ADAPTER_TAG, WEBCAM_CDN
+__all__ = ["Webcam", "WEBCAM_IMPORTS", "WEBCAM_ADAPTER_TAG", "WEBCAM_CDN"]
